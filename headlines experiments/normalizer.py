@@ -84,6 +84,6 @@ class Normalizer():
             print("[INFO] Transforming the text into a sparse matrix.")
 
             print("[INFO] Sparse Matrix has been successfully created over the text given as input.")
-            return self.vectorizer, sparse_matrix
+            return sparse_matrix
         except Exception as e:
             print("[ERR] The following error occured while trying to create a sparse matrix: "+str(e))
