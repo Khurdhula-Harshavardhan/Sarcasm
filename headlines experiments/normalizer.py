@@ -84,13 +84,6 @@ class Normalizer():
             print("[INFO] Transforming the text into a sparse matrix.")
 
             print("[INFO] Sparse Matrix has been successfully created over the text given as input.")
-            return sparse_matrix
+            return self.vectorizer, sparse_matrix
         except Exception as e:
             print("[ERR] The following error occured while trying to create a sparse matrix: "+str(e))
-
-
-
-print(Normalizer().vectorize(pd.DataFrame({
-    "text" : ["Wow bitch can't 1234234", "asdfasdf123", "askdjflkajs 12342  yess"," FUCK YOUUUUU "],
-    "digits": [1,2,3,4]
-})))
