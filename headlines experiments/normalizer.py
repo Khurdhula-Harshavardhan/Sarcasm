@@ -1,6 +1,10 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 import re
+import numpy as np
+from gensim.models import Word2Vec
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 class Normalizer():
     """
@@ -104,3 +108,40 @@ class Normalizer():
             return sparse_matrix
         except Exception as e:
             print("[ERR] The following error occured while trying to create a sparse matrix: "+str(e))
+
+
+    def get_embeddings(self, df, max_seq_length=100, embedding_dim=110):
+        """
+        This method accepts the pandas dataframe and returns the embeddings resulting from it.
+        """
+        print("[INFO] Trying to create a word embeddings for this dataframe using Word2Vec model..")
+        df = self.cleanDataset(data=df) #clean the text before fitting an vectorizer over it.
+        print("[INFO] Attempting further preprocessing using Tokenizer()")
+
+        column = self.extract_text_columns(dataframe=df)
+
+        if column is None:
+            raise TypeError("The dataset contains no text to be normalized!")
+        # Preprocess the text data
+        text_data = df[column].tolist()
+
+        # Tokenize and prepare text data
+        tokenizer = Tokenizer()
+        tokenizer.fit_on_texts(text_data)
+        sequences = tokenizer.texts_to_sequences(text_data)
+        sequences = pad_sequences(sequences, maxlen=max_seq_length, padding="post", truncating="post")
+
+        # Train a Word2Vec model
+        word2vec_model = Word2Vec(sentences=[text.split() for text in text_data],
+                                vector_size=embedding_dim,
+                                window=5,  # Context window size
+                                min_count=1,  # Minimum word frequency
+                                sg=0)  # CBOW model (skip-gram: sg=1)
+
+        # Create an embedding matrix
+        embedding_matrix = np.zeros((len(tokenizer.word_index) + 1, embedding_dim))
+        for word, index in tokenizer.word_index.items():
+            if word in word2vec_model.wv:
+                embedding_matrix[index] = word2vec_model.wv[word]
+
+        return embedding_matrix
