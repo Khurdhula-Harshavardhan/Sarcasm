@@ -87,3 +87,20 @@ class Normalizer():
             return sparse_matrix
         except Exception as e:
             print("[ERR] The following error occured while trying to create a sparse matrix: "+str(e))
+
+
+    def get_matrix(self, data: pd.DataFrame) -> list[list]:
+        """
+        This method can be used to get a sparse matrix on text that is new, and wants to be transformed using the old vectorizer.
+        """
+        try:
+            print("[INFO] Trying to create a sparse matrix for text, using an instance of TfIdf_vectorizer")
+            data = self.cleanDataset(data=data) #clean the text before fitting an vectorizer over it.
+            sparse_matrix = self.vectorizer.transform(data) #fit and transform the data.
+            print("[INFO] Fitting the vecotirzer to given text.")
+            print("[INFO] Transforming the text into a sparse matrix.")
+
+            print("[INFO] Sparse Matrix has been successfully created over the text given as input.")
+            return sparse_matrix
+        except Exception as e:
+            print("[ERR] The following error occured while trying to create a sparse matrix: "+str(e))
