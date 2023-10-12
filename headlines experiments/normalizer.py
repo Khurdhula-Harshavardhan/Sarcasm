@@ -38,7 +38,7 @@ class Normalizer():
         except Exception as e:
             print("[ERR] The following error occured while trying to normalize the string: "+str(e))
 
-    def extract_text_columns(self, dataframe:pd.DataFrame) -> pd.DataFrame:
+    def extract_text_columns(self, dataframe:pd.DataFrame) -> str:
         """
         Extracts and returns a list of column names that contain text data from a pandas DataFrame.
         """
@@ -63,7 +63,6 @@ class Normalizer():
                 raise TypeError("The dataset contains no text to be normalized!")
             
             print("[INFO] Successfully extracted text columns from the dataset.")
-            print(column)
 
             print("[INFO] Applying Normalization over text:")
             print("[INFO]       - Converting Text into lower case for caseconsistency.")
@@ -110,27 +109,22 @@ class Normalizer():
             print("[ERR] The following error occured while trying to create a sparse matrix: "+str(e))
 
 
-    def get_embeddings(self, df, max_seq_length=100, embedding_dim=110):
+    def get_embeddings(self, df, max_seq_length=100, embedding_dim=100):
         """
         This method accepts the pandas dataframe and returns the embeddings resulting from it.
         """
-        print("[INFO] Trying to create a word embeddings for this dataframe using Word2Vec model..")
-        df = self.cleanDataset(data=df) #clean the text before fitting an vectorizer over it.
+        print("[INFO] Trying to create word embeddings for this dataframe using Word2Vec model..")
+        df = self.cleanDataset(data=df) #clean the text before fitting a vectorizer over it.
         print("[INFO] Attempting further preprocessing using Tokenizer()")
-
-        column = self.extract_text_columns(dataframe=df)
-
-        if column is None:
-            raise TypeError("The dataset contains no text to be normalized!")
-        # Preprocess the text data
-        text_data = df[column].tolist()
+        text_data = df.tolist()
 
         # Tokenize and prepare text data
         tokenizer = Tokenizer()
         tokenizer.fit_on_texts(text_data)
         sequences = tokenizer.texts_to_sequences(text_data)
         sequences = pad_sequences(sequences, maxlen=max_seq_length, padding="post", truncating="post")
-
+        
+        print("[INFO] Fitting a Word2Vec model for this text.")
         # Train a Word2Vec model
         word2vec_model = Word2Vec(sentences=[text.split() for text in text_data],
                                 vector_size=embedding_dim,
@@ -138,10 +132,19 @@ class Normalizer():
                                 min_count=1,  # Minimum word frequency
                                 sg=0)  # CBOW model (skip-gram: sg=1)
 
-        # Create an embedding matrix
+        print("[INFO] Creating an embedding matrix!")
+        # Create an embedding matrix for the unique words
         embedding_matrix = np.zeros((len(tokenizer.word_index) + 1, embedding_dim))
         for word, index in tokenizer.word_index.items():
             if word in word2vec_model.wv:
                 embedding_matrix[index] = word2vec_model.wv[word]
 
-        return embedding_matrix
+        # Convert sequences to a sequence of embeddings
+        embedded_sequences = np.array([
+            np.array([embedding_matrix[word] for word in sequence]) 
+            for sequence in sequences
+        ])
+
+        print("[INFO] Word embeddings created! Successfully!")
+        return embedded_sequences
+
