@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.metrics import roc_curve, auc
 import numpy as np
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+
 
 
 
@@ -60,3 +62,24 @@ class ModelEvaluation:
 
         print(f'Best Threshold={best_thresh:.4f}')
         return best_thresh
+    
+
+    def cross_validation_score(self, model, X, y, scoring='accuracy'):
+        """
+        Performs 5-fold cross-validation and returns the scores for each fold.
+
+        :param model: The machine learning model to be evaluated.
+        :param X: The input features.
+        :param y: The target labels.
+        :param scoring: The scoring metric to use.
+        :return: The cross-validation scores for each fold.
+        """
+        # Create a StratifiedKFold object to keep the same proportion of classes in each fold
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+        # Perform cross-validation and return the scores
+        scores = cross_val_score(model, X, y, cv=cv, scoring=scoring)
+        print(f"Cross-validation scores for each fold: {scores}")
+        print(f"Mean score: {scores.mean()}")
+        print(f"Standard Deviation of the scores: {scores.std()}")
+        return scores
