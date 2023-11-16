@@ -22,6 +22,17 @@ class Normalizer():
         except Exception as e:
             print("[ERR] The following error occured while trying to initialize Normalizer: " +str(e))
 
+    def get_vertorizer(self) -> object:
+        """
+        Sometimes, we would need the vectorizer for future purposes, then we expect the fitted vectorizer to be returned.
+        """
+        try:
+            if self.vectorizer is None:
+                raise Exception("[ERR] Vectorixer not initialized!")
+            return self.vectorizer
+        except Exception as e:
+            print("[ERR] The following exception occured while returning the vectorizer: "+str(e))
+
     def clean(self, text: str) -> str:
         """
         The clean method accepts a string as a parameter, and performs basic normalization on it by:
